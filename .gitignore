@@ -1,0 +1,7 @@
+.vscode
+venv
+webapp/src/KEY.py
+webapp/src/main/__pycache__
+webapp/src/webapp/__pycache__
+webapp/src/main/migrations/__pycache__
+webapp/src/db.sqlite3
