@@ -26,7 +26,7 @@ cookiecutter git+https://github.com/airyou-code/django_project_template.git
 ```
 
 ```bash
-cd django_project_template
+cd {{cookiecutter.project_slug}}
 
 chmod +x start.sh && ./start.sh
 ```
