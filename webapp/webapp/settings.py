@@ -10,7 +10,15 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+import os
+# from core.utils import get_data_depoy
+# from .version import VERSION_API as VAPI
 from pathlib import Path
+from decouple import config
+from decouple import Csv
+from dj_database_url import parse as db_url
+# from core.logger import LOG
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,17 +28,25 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-c%@zyw#h$&@ga*+cbpqf5l!-z4pm9e)q0@rvjfl1hx=rvc!&nw'
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-c%@zyw#h$&@ga*+cbpqf5l!-z4pm9e)q0@rvjfl1hx=rvc!&nw')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
+
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='',
+    cast=Csv()
+)
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -38,10 +54,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+
     'rest_framework',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
+    'drf_spectacular',
     'django_filters',
 
-    'main',
+    'core',
 ]
 
 MIDDLEWARE = [
@@ -59,7 +79,14 @@ ROOT_URLCONF = 'webapp.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates'),
+            os.path.join(
+                BASE_DIR,
+                'docs',
+                '_build'
+            )
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -84,6 +111,13 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend'
     ]
 }
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': "{{cookiecutter.project_name.replace('_', ' ')}} API",
+    'DESCRIPTION': ' API for development',
+    'VERSION': "{{cookiecutter.version}}"
+}
+
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
@@ -93,6 +127,13 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+# DATABASES = {
+#     'default': config(
+#         'DATABASE_URL',
+#         default='postgres://user:password@127.0.0.1:5432/db_name',
+#         cast=db_url
+#     )
+# }
 
 
 # Password validation
@@ -117,21 +158,56 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = config("LANGUAGE_CODE", default='en-us')
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = config("TIME_ZONE", default="{{cookiecutter.timezone}}")
 
-USE_I18N = True
+USE_I18N = config("USE_I18N", default=True, cast=bool)
 
-USE_TZ = True
+USE_TZ = config("USE_TZ", default=True, cast=bool)
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+STATIC_URL = '/static/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
+
+DOCS_ROOT = os.path.join(BASE_DIR, 'docs', '_build', 'html')
+DOCS_URL = '/docs/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# JAZZMIN SETTINGS
+JAZZMIN_SETTINGS = {
+    # title of the window (Will default to current_admin_site.site_title if absent or None)
+    "site_title": "{{cookiecutter.project_name.replace('_', ' ')}}",
+
+    # Title on the brand, and login screen (19 chars max) (defaults to current_admin_site.site_header if absent or None)
+    "site_header": "Welcome to {{cookiecutter.project_name.replace('_', ' ')}}!",
+
+    # Welcome text on the login screen
+    "welcome_sign": "Log in",
+
+    # Copyright on the footer
+    "copyright": config(
+        "FOOTOR_NAME", default="v{{cookiecutter.version}} ()"
+        # + '<a href="/docs/changelog.html"'
+        # + ' target="_blank">'
+        # + 'DOCS</a>'
+        ),
+}
+
+JAZZMIN_UI_TWEAKS = {
+}
+
+# https://github.com/jazzband/django-tinymce/issues/354
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+# https://issueantenna.com/repo/jazzband/django-tinymce/issues/389
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

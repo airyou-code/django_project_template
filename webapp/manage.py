@@ -4,7 +4,7 @@ import os
 import sys
 
 
-def main():
+def core():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'webapp.settings')
     try:
@@ -19,4 +19,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    core()
