@@ -1,4 +1,4 @@
-# Dkango App Template
+# Django Project Template
 
 
 ## About
